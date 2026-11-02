@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.data.sample_data import (
+    build_enterprise_data_model,
     generate_ai_answer,
     get_analytics,
     get_dashboard_overview,
@@ -210,6 +211,11 @@ def security() -> dict:
 @app.get("/api/v1/monitoring")
 def monitoring() -> dict:
     return get_monitoring()
+
+
+@app.get("/api/v1/data-workflow")
+def data_workflow() -> dict:
+    return build_enterprise_data_model()
 
 
 @app.post("/api/v1/ai/query", response_model=AIResponse)

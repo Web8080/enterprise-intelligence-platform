@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 
+from app.data.sample_data import build_enterprise_data_model
 from app.main import app
 
 client = TestClient(app)
@@ -50,3 +51,12 @@ def test_enterprise_module_endpoints() -> None:
         response = client.get(path)
         assert response.status_code == 200, f"Endpoint failed: {path}"
         assert isinstance(response.json(), dict)
+
+
+def test_enterprise_data_model_has_daily_monthly_and_annual_updates() -> None:
+    dataset = build_enterprise_data_model()
+
+    assert dataset["total_records"] >= 1_000_000
+    assert len(dataset["daily_updates"]) >= 30
+    assert len(dataset["monthly_updates"]) >= 12
+    assert len(dataset["annual_updates"]) >= 3

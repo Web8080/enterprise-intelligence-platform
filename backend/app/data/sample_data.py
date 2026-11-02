@@ -1,9 +1,92 @@
 from __future__ import annotations
 
+from datetime import date, timedelta
 from typing import Any
 
 
+def _month_offset(base_date: date, months: int) -> date:
+    year = base_date.year + (base_date.month - 1 + months) // 12
+    month = (base_date.month - 1 + months) % 12 + 1
+    return date(year, month, 1)
+
+
+def build_enterprise_data_model() -> dict[str, Any]:
+    daily_updates: list[dict[str, Any]] = []
+    total_records = 0
+    start_date = date.today().replace(day=1) - timedelta(days=364)
+
+    for offset in range(365):
+        current_day = start_date + timedelta(days=offset)
+        records_processed = 3200 + offset * 11 + (offset % 17) * 19
+        rent_collected = 980000 + offset * 26000 + ((offset % 9) * 4700)
+        arrears_value = 245000 + (offset % 18) * 5400 - (offset // 12) * 1800
+        occupancy_rate = 92.1 + ((offset % 23) * 0.09)
+        incidents = 7 + (offset % 5)
+        daily_updates.append(
+            {
+                "date": current_day.isoformat(),
+                "records_processed": records_processed,
+                "rent_collected": round(rent_collected, 2),
+                "arrears_value": round(max(arrears_value, 120000), 2),
+                "occupancy_rate": round(min(occupancy_rate, 97.4), 2),
+                "open_incidents": incidents,
+            }
+        )
+        total_records += records_processed
+
+    monthly_updates: list[dict[str, Any]] = []
+    for month_index in range(18):
+        month_start = _month_offset(date.today().replace(day=1), -(17 - month_index))
+        month_records = sum(
+            item["records_processed"]
+            for item in daily_updates
+            if month_start <= date.fromisoformat(item["date"]) < _month_offset(month_start, 1)
+        )
+        monthly_updates.append(
+            {
+                "month": month_start.strftime("%Y-%m"),
+                "records_processed": month_records,
+                "rent_collected": round(month_records * 1.42, 2),
+                "arrears_value": round(month_records * 0.088, 2),
+                "occupancy_rate": round(93.8 + month_index * 0.18, 2),
+            }
+        )
+
+    annual_updates: list[dict[str, Any]] = []
+    for year_index in range(5):
+        year_value = date.today().year - 4 + year_index
+        yearly_records = sum(
+            item["records_processed"] for item in daily_updates if date.fromisoformat(item["date"]).year == year_value
+        )
+        annual_updates.append(
+            {
+                "year": str(year_value),
+                "records_processed": yearly_records,
+                "rent_collected": round(yearly_records * 1.48, 2),
+                "arrears_value": round(yearly_records * 0.085, 2),
+                "occupancy_rate": round(92.9 + year_index * 0.45, 2),
+            }
+        )
+
+    return {
+        "organisation": "Northgate Property Group",
+        "generated_at": date.today().isoformat(),
+        "total_records": total_records,
+        "daily_updates": daily_updates,
+        "monthly_updates": monthly_updates,
+        "annual_updates": annual_updates,
+        "workflow": {
+            "ingestion": "daily_snapshot",
+            "aggregation": "monthly_rollup",
+            "forecast": "annual_strategy_review",
+        },
+        "data_layers": ["RAW", "STAGING", "CURATED", "MART"],
+        "compliance": "rbac_enforced",
+    }
+
+
 def get_dashboard_overview() -> dict[str, Any]:
+    dataset = build_enterprise_data_model()
     return {
         "organisation": "Northgate Property Group",
         "date_range": "Q3 2026",
@@ -13,6 +96,8 @@ def get_dashboard_overview() -> dict[str, Any]:
         "occupancy_rate": "94.8%",
         "maintenance_expenditure": "$612K",
         "portfolio_health": "Stable",
+        "data_volume": f"{dataset['total_records']:,} synthetic records",
+        "data_freshness": "Daily refresh scheduled",
         "metrics": [
             {"label": "Monthly rent collected", "value": "$1.33M", "delta": "+8.2%", "trend": "up"},
             {"label": "Occupancy uplift", "value": "2.1%", "delta": "+0.6pp", "trend": "up"},

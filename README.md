@@ -4,9 +4,11 @@ SNOWFLAKE · DATA ENGINEERING · AI/ML · CLOUD SECURITY
 
 A production-oriented enterprise data platform combining modern data warehousing, automated pipelines, machine learning, generative AI, data governance and cloud-native engineering.
 
-## Overview
+## About
 
-This repository contains a working enterprise intelligence platform prototype built for property management and real estate operations. It demonstrates the end-to-end flow from ingestion and transformation to analytics, AI-assisted insights, governance, and operational monitoring. The design is modular and can be extended to other industries such as healthcare, logistics, finance, and retail.
+Enterprise Intelligence Platform is a production-oriented Snowflake-powered data platform for property management and real estate operations. It combines data ingestion, transformation, analytics, Snowpark ML, generative AI, governance, and operational monitoring into a single enterprise-ready solution for organisations that need secure, actionable intelligence across their portfolios.
+
+The platform is designed to ingest structured and semi-structured operational data, enforce governance and security controls, model business performance through analytics and forecasting, and provide natural language insights for decision-making. It is built with modular architecture so it can extend beyond property operations into additional industries such as logistics, healthcare, retail, and financial services.
 
 ## Product Goals
 
