@@ -261,11 +261,8 @@ export default function Home() {
         <div className="flex-1">
           <header className="mb-8 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div className="flex items-center gap-3">
-                <CompanyLogo />
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-sky-600">Property Operations Intelligence</p>
-                </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-sky-600">Property Operations Intelligence</p>
               </div>
 
               <div className="flex items-center gap-3">
