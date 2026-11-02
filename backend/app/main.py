@@ -7,10 +7,12 @@ from app.config import settings
 from app.data.sample_data import (
     build_enterprise_data_model,
     generate_ai_answer,
+    get_ai_assistant_status,
     get_analytics,
     get_dashboard_overview,
     get_ingestion_status,
     get_monitoring,
+    get_sales_overview,
     get_security_overview,
 )
 from app.routers.analytics import router as analytics_router
@@ -138,6 +140,11 @@ def finance() -> dict:
     }
 
 
+@app.get("/api/v1/sales")
+def sales() -> dict:
+    return get_sales_overview()
+
+
 @app.get("/api/v1/maintenance")
 def maintenance() -> dict:
     return {
@@ -174,6 +181,7 @@ def ml() -> dict:
             {"name": "rental_arrears_model", "metric": "ROC AUC", "score": 0.83, "status": "trained"},
             {"name": "occupancy_forecast_model", "metric": "MAPE", "score": 0.12, "status": "trained"},
             {"name": "maintenance_demand_model", "metric": "F1", "score": 0.78, "status": "trained"},
+            {"name": "sales_pipeline_forecast_model", "metric": "MAPE", "score": 0.15, "status": "trained"},
         ],
         "predictions": [
             {"property": "Bayside Residences", "risk": "medium", "confidence": 0.71},
@@ -216,6 +224,11 @@ def monitoring() -> dict:
 @app.get("/api/v1/data-workflow")
 def data_workflow() -> dict:
     return build_enterprise_data_model()
+
+
+@app.get("/api/v1/ai/assistant")
+def ai_assistant() -> dict:
+    return get_ai_assistant_status()
 
 
 @app.post("/api/v1/ai/query", response_model=AIResponse)

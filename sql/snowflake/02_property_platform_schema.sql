@@ -66,6 +66,39 @@ CREATE OR REPLACE TABLE ai_interaction_log (
     created_at TIMESTAMP_LTZ DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE OR REPLACE TABLE sales_account_dim (
+    account_id VARCHAR,
+    organisation_id VARCHAR,
+    account_name VARCHAR,
+    sector VARCHAR,
+    region VARCHAR,
+    city VARCHAR,
+    PRIMARY KEY (account_id)
+);
+
+CREATE OR REPLACE TABLE sales_rep_dim (
+    rep_id VARCHAR,
+    rep_name VARCHAR,
+    region VARCHAR,
+    team_name VARCHAR,
+    PRIMARY KEY (rep_id)
+);
+
+CREATE OR REPLACE TABLE sales_pipeline_fact (
+    opportunity_id VARCHAR,
+    account_id VARCHAR,
+    rep_id VARCHAR,
+    opportunity_name VARCHAR,
+    stage_name VARCHAR,
+    region_name VARCHAR,
+    opportunity_value NUMBER(18,2),
+    win_probability NUMBER(5,2),
+    expected_close_date DATE,
+    closed_won_date DATE,
+    status VARCHAR,
+    created_at TIMESTAMP_LTZ DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE OR REPLACE VIEW v_property_kpis AS
 SELECT
     p.property_id,
@@ -80,6 +113,17 @@ FROM property_dim p
 LEFT JOIN payment_fact pay
   ON p.property_id = pay.property_id
 GROUP BY 1,2,3,4,5;
+
+CREATE OR REPLACE VIEW v_sales_pipeline_summary AS
+SELECT
+    p.region_name,
+    p.stage_name,
+    COUNT(*) AS deal_count,
+    SUM(p.opportunity_value) AS pipeline_value,
+    ROUND(AVG(p.win_probability), 2) AS avg_win_probability
+FROM sales_pipeline_fact p
+WHERE p.status = 'OPEN'
+GROUP BY p.region_name, p.stage_name;
 
 CREATE OR REPLACE VIEW v_maintenance_summary AS
 SELECT

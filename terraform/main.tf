@@ -35,6 +35,17 @@ resource "aws_s3_bucket" "curated_data" {
   }
 }
 
+resource "aws_s3_bucket" "sales_data" {
+  bucket = "${var.project_name}-sales-${var.environment}"
+  force_destroy = true
+
+  tags = {
+    Name        = "${var.project_name}-sales"
+    Environment = var.environment
+    Project     = var.project_name
+  }
+}
+
 resource "aws_s3_bucket" "audit_logs" {
   bucket = "${var.project_name}-audit-${var.environment}"
   force_destroy = true
@@ -77,6 +88,10 @@ output "landing_bucket_name" {
 
 output "curated_bucket_name" {
   value = aws_s3_bucket.curated_data.bucket
+}
+
+output "sales_bucket_name" {
+  value = aws_s3_bucket.sales_data.bucket
 }
 
 output "audit_bucket_name" {

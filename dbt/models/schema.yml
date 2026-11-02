@@ -7,6 +7,7 @@ sources:
     tables:
       - name: property_raw
       - name: payment_fact
+      - name: sales_pipeline_raw
 
 models:
   - name: stg_properties
@@ -23,6 +24,20 @@ models:
         tests:
           - not_null
 
+  - name: stg_sales_pipeline
+    description: Standardised sales opportunity records for pipeline analytics.
+    columns:
+      - name: opportunity_id
+        tests:
+          - unique
+          - not_null
+      - name: account_id
+        tests:
+          - not_null
+      - name: opportunity_value
+        tests:
+          - not_null
+
   - name: mart_portfolio_kpis
     description: Portfolio-level KPI rollups for occupancy, arrears and rental performance.
     columns:
@@ -30,5 +45,18 @@ models:
         tests:
           - not_null
       - name: total_arrears
+        tests:
+          - not_null
+
+  - name: mart_sales_pipeline_kpis
+    description: Sales pipeline rollups by region and stage with weighted probability.
+    columns:
+      - name: region_name
+        tests:
+          - not_null
+      - name: stage_name
+        tests:
+          - not_null
+      - name: pipeline_value
         tests:
           - not_null

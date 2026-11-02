@@ -21,10 +21,10 @@
   <text x="72" y="95" fill="#F4F8FF" font-size="52" font-family="Arial, Helvetica, sans-serif" font-weight="700">Property Operations Intelligence</text>
 
   <g>
-    <rect x="1200" y="64" width="180" height="46" rx="12" fill="#0F233F" stroke="#2D466C"/>
-    <text x="1239" y="94" fill="#E7F0FF" font-size="22" font-family="Arial, Helvetica, sans-serif">Northgate Property Group</text>
-    <rect x="1390" y="64" width="146" height="46" rx="12" fill="#1E82FF"/>
-    <text x="1415" y="94" fill="#06121F" font-size="22" font-family="Arial, Helvetica, sans-serif" font-weight="700">Generate insight</text>
+    <rect x="1060" y="64" width="320" height="46" rx="12" fill="#0F233F" stroke="#2D466C"/>
+    <text x="1084" y="94" fill="#8FA6C1" font-size="19" font-family="Arial, Helvetica, sans-serif">Search properties, deals, or sections</text>
+    <rect x="1396" y="64" width="140" height="46" rx="12" fill="#1E82FF"/>
+    <text x="1423" y="94" fill="#06121F" font-size="19" font-family="Arial, Helvetica, sans-serif" font-weight="700">AI assistant</text>
   </g>
 
   <g filter="url(#shadow)">
@@ -119,7 +119,7 @@
 
   <g>
     <rect x="48" y="874" width="720" height="56" rx="16" fill="#0F223B" stroke="#1C3856"/>
-    <text x="76" y="910" fill="#F3F8FF" font-size="36" font-family="Arial, Helvetica, sans-serif" font-weight="700">AI Intelligence Assistant</text>
+    <text x="76" y="910" fill="#F3F8FF" font-size="36" font-family="Arial, Helvetica, sans-serif" font-weight="700">AI Assistant</text>
     <text x="995" y="910" fill="#A4E7C3" font-size="24" font-family="Arial, Helvetica, sans-serif" font-weight="700">GROUNDED QUERIES</text>
     <rect x="1208" y="874" width="180" height="56" rx="14" fill="#1E82FF"/>
     <text x="1262" y="910" fill="#06121F" font-size="28" font-family="Arial, Helvetica, sans-serif" font-weight="700">Ask</text>

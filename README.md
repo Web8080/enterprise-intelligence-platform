@@ -1,6 +1,6 @@
 # Enterprise Intelligence Platform
 
-![Enterprise Intelligence Platform dashboard screenshot](Screenshot%202026-11-02%20at%2018.52.54.png)
+![Enterprise Intelligence Platform dashboard preview](docs/dashboard-preview.svg)
 
 SNOWFLAKE · DATA ENGINEERING · AI/ML · CLOUD SECURITY
 
@@ -8,25 +8,27 @@ A production-oriented enterprise data platform combining modern data warehousing
 
 ## About
 
-Enterprise Intelligence Platform is a production-oriented Snowflake-powered data platform for property management and real estate operations. It combines data ingestion, transformation, analytics, Snowpark ML, generative AI, governance, and operational monitoring into a single enterprise-ready solution for organisations that need secure, actionable intelligence across their portfolios.
+Enterprise Intelligence Platform is a production-oriented Snowflake-powered data platform for property management and real estate operations. It combines data ingestion, transformation, portfolio and sales analytics, Snowpark ML, a grounded generative AI assistant, governance, integrations, and operational monitoring into a single enterprise-ready solution for organisations that need secure, actionable intelligence across their portfolios.
 
-The platform is designed to ingest structured and semi-structured operational data, enforce governance and security controls, model business performance through analytics and forecasting, and provide natural language insights for decision-making. It is built with modular architecture so it can extend beyond property operations into additional industries such as logistics, healthcare, retail, and financial services.
+The platform is designed to ingest structured and semi-structured operational data, connect CRM and sales systems, enforce governance and security controls, model business performance through analytics and forecasting, and provide natural language insights for decision-making. It is built with modular architecture so it can extend beyond property operations into additional industries such as logistics, healthcare, retail, and financial services.
 
 ## Product Goals
 
-- Ingest structured and semi-structured property and portfolio data.
+- Ingest structured and semi-structured property, portfolio, and sales pipeline data.
 - Organise data using a layered Warehouse model inspired by Snowflake architecture.
 - Transform raw landings into curated business datasets.
-- Run ML-driven predictions for arrears, occupancy, and maintenance demand.
-- Deliver natural language enterprise analytics through an AI assistant.
-- Apply enterprise security controls and governance policies.
+- Run ML-driven predictions for arrears, occupancy, maintenance demand, and sales pipeline coverage.
+- Deliver natural language enterprise analytics through the grounded AI Assistant.
+- Track sales opportunities, targets, channels, and closed-won performance.
+- Connect external systems through a managed integrations surface.
+- Apply enterprise security controls, workspace settings, and governance policies.
 - Support monitoring and operational visibility across data and platform services.
 
 ## Architecture
 
 ```mermaid
 flowchart TD
-    A[Business Data Sources] --> B[Ingestion Layer]
+    A[Property and Sales Data Sources] --> B[Ingestion Layer]
     B --> C[Snowflake Raw Layer]
     C --> D[Snowflake Streams & Tasks]
     D --> E[Transformation Layer]
@@ -37,11 +39,14 @@ flowchart TD
     H --> I
     I --> J[FastAPI Backend]
     J --> K[React / Next.js Dashboard]
-    K --> L[Natural Language Analytics]
+    K --> L[AI Assistant]
+    K --> O[Sales Intelligence]
+    K --> P[Integrations and Settings]
     M[RBAC / Data Governance] --> J
     N[Monitoring / Audit / CI-CD] --> B
     N --> D
     N --> J
+    N --> P
 ```
 
 ### High-level system architecture
@@ -53,29 +58,35 @@ flowchart LR
         S2[Lease and tenant data]
         S3[Maintenance service desk]
         S4[Finance and general ledger]
+        S5[Sales CRM and opportunity pipeline]
     end
 
     subgraph Data[Data Platform]
         D1[Ingestion jobs]
         D2[Snowflake raw]
         D3[Staging and validation]
-        D4[Curated marts]
+        D4[Curated portfolio and sales marts]
         D5[ML and AI services]
     end
 
     subgraph App[Application Layer]
         A1[FastAPI services]
         A2[Next.js dashboard]
-        A3[AI assistant]
+        A3[AI Assistant]
+        A4[Sales workspace]
+        A5[Integrations and Settings]
     end
 
     S1 --> D1
     S2 --> D1
     S3 --> D1
     S4 --> D1
+    S5 --> D1
     D1 --> D2 --> D3 --> D4 --> D5
     D5 --> A1 --> A2
     D5 --> A3
+    D4 --> A4
+    A5 --> D1
 ```
 
 ### Data ingestion and transformation lifecycle
@@ -89,11 +100,11 @@ sequenceDiagram
     participant Curated as Curated Layer
     participant Quality as Quality Rules
 
-    Source->>Ingest: Upload CSV/JSON/API payload
+    Source->>Ingest: Upload property, finance, or sales CSV/JSON/API payload
     Ingest->>Raw: Persist raw records + metadata
     Ingest->>Quality: Validate schema and duplicates
-    Quality->>Staging: Standardize and enrich data
-    Staging->>Curated: Publish business-ready records
+    Quality->>Staging: Standardize and enrich property and opportunity data
+    Staging->>Curated: Publish portfolio and sales-ready records
     Curated-->>Ingest: Data quality and freshness metrics
 ```
 
@@ -101,14 +112,15 @@ sequenceDiagram
 
 ```mermaid
 flowchart TD
-    A[Curated enterprise datasets] --> B[Feature engineering]
+    A[Curated portfolio and sales datasets] --> B[Feature engineering]
     B --> C[Snowpark ML training]
     C --> D[Model validation and metrics]
     D --> E[Versioned model registry]
     E --> F[Inference pipeline]
-    F --> G[Forecasts and anomaly results]
-    G --> H[AI assistant]
-    H --> I[Business insight generation]
+    F --> G[Forecasts, pipeline coverage, and anomaly results]
+    G --> H[AI Assistant]
+    H --> I[Business insight and SQL provenance]
+    H --> J[Executive and sales actions]
 ```
 
 ### Authentication and authorisation lifecycle
@@ -197,7 +209,7 @@ The following wireframes reflect the product surface shipped in this repository.
 
 ```mermaid
 flowchart TB
-    A[Sidebar] --> B[Organisation selector]
+    A[Sidebar: Overview, Portfolio, Sales, Finance, Operations, Governance, AI Assistant, Integrations, Settings] --> B[Global search]
     A --> C[Date filters]
     B --> D[Total Properties]
     B --> E[Total Rental Income]
@@ -208,6 +220,7 @@ flowchart TB
     F --> J[AI Business Insights]
     G --> K[Recent Alerts]
     H --> L[Maintenance Spend]
+    J --> M[AI Assistant action]
 ```
 
 ### Wireframe B: Data Engineering Console
@@ -223,17 +236,20 @@ flowchart TB
     F --> H[Pipeline Logs]
 ```
 
-### Wireframe C: AI Intelligence Assistant
+### Wireframe C: AI Assistant
 
 ```mermaid
 flowchart TB
-    A[Question Input] --> B[Suggested Business Questions]
-    A --> C[AI-generated Response]
-    C --> D[SQL Query Provenance]
-    C --> E[Data Source References]
-    C --> F[Charts and Tables]
-    C --> G[Confidence and Limitation Indicators]
-    D --> H[Query History]
+    A[Header AI Assistant Action] --> B[Assistant Workspace]
+    B --> C[Question Input]
+    B --> D[Suggested Business Questions]
+    B --> E[Assistant Status and Model]
+    C --> F[AI-generated Response]
+    F --> G[SQL Query Provenance]
+    F --> H[Data Source References]
+    F --> I[Charts and Tables]
+    F --> J[Confidence and Limitation Indicators]
+    G --> K[Query History]
 ```
 
 ### Wireframe D: Security and Governance Console
@@ -275,14 +291,69 @@ flowchart TB
     G --> H[Deployment Status]
 ```
 
+### Wireframe G: Sales Workspace
+
+```mermaid
+flowchart TB
+    A[Sales Navigation] --> B[Pipeline Value]
+    A --> C[Closed Won MTD]
+    A --> D[Win Rate]
+    A --> E[Average Deal Cycle]
+    B --> F[Sales Performance Against Target]
+    C --> G[Active Pipeline Table]
+    D --> H[Regional Target Attainment]
+    E --> I[Channel Mix]
+    G --> J[Account, City, Value, Stage, Owner, Close Date]
+```
+
+### Wireframe H: Integrations
+
+```mermaid
+flowchart TB
+    A[Integrations Navigation] --> B[Connected Systems Summary]
+    B --> C[Snowflake]
+    B --> D[Yardi]
+    B --> E[Salesforce]
+    B --> F[Stripe]
+    B --> G[Slack]
+    B --> H[Power BI]
+    C --> I[Manage Connection and Last Sync]
+```
+
+### Wireframe I: Settings
+
+```mermaid
+flowchart TB
+    A[Settings Navigation] --> B[Organisation Profile]
+    A --> C[Reporting Defaults]
+    A --> D[Notifications]
+    A --> E[Data and Security]
+    A --> F[Workspace Roles]
+    B --> G[Save Settings]
+    D --> H[Email Digest, AI Audit Log, Board Pack]
+    E --> I[Snowflake Connection and Access Policies]
+```
+
 ## Repository Structure
 
-- `backend/` — Python FastAPI application, ingestion services, and API layer.
-- `frontend/` — Next.js dashboard and enterprise UI.
+- `backend/` — Python FastAPI application, ingestion services, sales and AI Assistant endpoints, and API layer.
+- `frontend/` — Next.js dashboard covering portfolio, sales, finance, operations, governance, AI Assistant, integrations and settings.
+- `dbt/` — staging and mart models for portfolio and sales pipeline analytics.
+- `sql/snowflake/` — warehouse, property, sales, security and governance DDL.
 - `docs/wireframes/` — diagram source files for the product interface and operational design.
-- `terraform/` — infrastructure definitions.
+- `terraform/` — infrastructure definitions including landing, sales, curated and audit storage.
 - `.github/workflows/` — automated CI/CD pipeline definition.
 - `docker-compose.yml` — full local platform stack.
+
+## API Surface
+
+- `GET /api/v1/dashboard/overview` — executive portfolio metrics and alerts.
+- `GET /api/v1/sales` — sales pipeline, targets, channels and opportunity detail.
+- `GET /api/v1/analytics`, `/api/v1/finance`, `/api/v1/maintenance` — operational analytics.
+- `GET /api/v1/ai/assistant` — assistant status, capabilities and suggested questions.
+- `POST /api/v1/ai/query` — grounded natural language analytics with SQL provenance.
+- `GET /api/v1/ingestion`, `/api/v1/pipelines`, `/api/v1/monitoring` — data platform operations.
+- `GET /api/v1/security`, `/api/v1/governance`, `/api/v1/audit` — governance and audit views.
 
 ## Local Startup
 
@@ -297,10 +368,15 @@ Then open:
 
 ## Core Features Delivered
 
-- Property portfolio analytics dashboard.
-- Rental and arrears overview metrics.
-- Maintenance and occupancy insights.
-- AI assistant grounded in demo operational data.
+- Property portfolio analytics dashboard with city-level performance, composition, watchlist and lease expiry views.
+- Sales workspace with pipeline value, closed-won performance, regional target attainment, channel mix and active opportunity table.
+- Finance workspace with revenue trends, arrears ageing, cost breakdown, forecast variance and recent transactions.
+- Operations workspace with work-order queue, maintenance spend, SLA performance, vendor scorecards and scheduled maintenance.
+- Governance workspace with roles, compliance posture, audit events and data access policies.
+- Grounded AI Assistant with suggested questions, SQL provenance, source references, confidence and limitations.
+- Global search across properties, sales opportunities and navigation sections.
+- Integrations workspace for Snowflake, Yardi, Salesforce, Stripe, Slack and Power BI.
+- Settings workspace for organisation profile, reporting defaults, notifications, data security and workspace roles.
 - Ingestion and pipeline status endpoints.
 - Security and governance summary model.
 - Observability status for health checks and operations.

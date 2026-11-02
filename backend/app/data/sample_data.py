@@ -135,6 +135,104 @@ def get_analytics() -> dict[str, Any]:
             {"region": "Central", "arrears": 49},
             {"region": "South", "arrears": 37},
         ],
+        "sales_by_region": [
+            {"region": "EMEA", "pipeline": 3400000, "attainment": 88},
+            {"region": "APAC", "pipeline": 2960000, "attainment": 76},
+            {"region": "Americas", "pipeline": 2040000, "attainment": 79},
+        ],
+    }
+
+
+def get_sales_overview() -> dict[str, Any]:
+    return {
+        "organisation": "Northgate Property Group",
+        "period": "Q3 2026",
+        "pipeline_value": "$8.4M",
+        "closed_won_mtd": "$1.26M",
+        "win_rate": "32.4%",
+        "avg_deal_cycle_days": 46,
+        "active_deals": 38,
+        "quarter_target": "$3.1M",
+        "target_attainment": "81%",
+        "metrics": [
+            {"label": "Pipeline value", "value": "$8.4M", "delta": "+12.6%", "trend": "up"},
+            {"label": "Closed won (MTD)", "value": "$1.26M", "delta": "+6.4%", "trend": "up"},
+            {"label": "Win rate", "value": "32.4%", "delta": "+2.1pp", "trend": "up"},
+            {"label": "Avg deal cycle", "value": "46 days", "delta": "-4 days", "trend": "down"},
+        ],
+        "monthly_sales": [
+            {"month": "Jul", "won": 920000, "target": 1000000},
+            {"month": "Aug", "won": 1080000, "target": 1050000},
+            {"month": "Sep", "won": 1260000, "target": 1050000},
+        ],
+        "channels": [
+            {"name": "Broker network", "value": 42},
+            {"name": "Direct enterprise", "value": 31},
+            {"name": "Partner referrals", "value": 17},
+            {"name": "Inbound marketing", "value": 10},
+        ],
+        "pipeline": [
+            {
+                "id": "OPP-2041",
+                "account": "Harbor Capital Assets",
+                "city": "London",
+                "value": "$1.84M",
+                "stage": "Negotiation",
+                "owner": "Aisha Chen",
+                "close_date": "2026-11-18",
+            },
+            {
+                "id": "OPP-2058",
+                "account": "Marina Heights Partners",
+                "city": "Dubai",
+                "value": "$1.42M",
+                "stage": "Proposal",
+                "owner": "Marco Silva",
+                "close_date": "2026-12-02",
+            },
+            {
+                "id": "OPP-2073",
+                "account": "Orchard Core Investors",
+                "city": "Singapore",
+                "value": "$1.16M",
+                "stage": "Discovery",
+                "owner": "Nadia Patel",
+                "close_date": "2026-12-15",
+            },
+            {
+                "id": "OPP-2089",
+                "account": "Harbour Point Living",
+                "city": "Toronto",
+                "value": "$980K",
+                "stage": "Contracting",
+                "owner": "Aisha Chen",
+                "close_date": "2026-11-09",
+            },
+        ],
+        "targets": [
+            {"region": "EMEA", "target": "$1.25M", "attainment": 88},
+            {"region": "APAC", "target": "$0.95M", "attainment": 76},
+            {"region": "Americas", "target": "$0.90M", "attainment": 79},
+        ],
+    }
+
+
+def get_ai_assistant_status() -> dict[str, Any]:
+    return {
+        "name": "AI Assistant",
+        "status": "online",
+        "model": "Snowflake Cortex",
+        "grounded": True,
+        "capabilities": [
+            "Portfolio and sales question answering",
+            "SQL provenance and source references",
+            "Confidence and limitation reporting",
+        ],
+        "suggested_questions": [
+            "Which properties have the highest rental arrears?",
+            "What is the sales pipeline coverage by region?",
+            "Summarise occupancy and maintenance risks for the executive team.",
+        ],
     }
 
 
@@ -203,15 +301,20 @@ def generate_ai_answer(question: str) -> dict[str, Any]:
         sql = "SELECT maintenance_category, SUM(cost_amount) AS total_cost FROM curated.maintenance_fact GROUP BY maintenance_category ORDER BY total_cost DESC LIMIT 5;"
         references = ["curated.maintenance_fact", "curated.property_dim"]
         confidence = "High"
+    elif "sales" in normalized or "pipeline" in normalized or "deal" in normalized:
+        answer = "The active sales pipeline is $8.4M across 38 opportunities, with $1.26M closed won month-to-date and 81% of the quarterly target attained. EMEA is the strongest region at 88% attainment, while APAC requires the most attention at 76%."
+        sql = "SELECT region_name, stage_name, SUM(opportunity_value) AS pipeline_value, COUNT(*) AS deal_count FROM curated.sales_pipeline_fact GROUP BY region_name, stage_name ORDER BY pipeline_value DESC;"
+        references = ["curated.sales_pipeline_fact", "curated.sales_account_dim", "curated.sales_rep_dim"]
+        confidence = "High"
     elif "tenant" in normalized and "behavior" in normalized:
         answer = "Payment behaviour analysis suggests a core group of tenants with irregular payment timing and a higher probability of delinquency. Early intervention remains the best lever for reducing arrears risk."
         sql = "SELECT tenant_id, payment_stability_score, arrears_probability FROM curated.tenant_behaviour_model ORDER BY arrears_probability DESC LIMIT 20;"
         references = ["curated.tenant_behaviour_model", "curated.payment_fact"]
         confidence = "Medium"
     else:
-        answer = "The platform can help answer portfolio, arrears, occupancy, maintenance, and tenant behaviour questions with data-backed insights. Please ask a question covering one of those categories."
+        answer = "The platform can help answer portfolio, sales, arrears, occupancy, maintenance, and tenant behaviour questions with data-backed insights. Please ask a question covering one of those categories."
         sql = "SELECT * FROM curated.property_kpis LIMIT 10;"
-        references = ["curated.property_kpis"]
+        references = ["curated.property_kpis", "curated.sales_pipeline_fact"]
         confidence = "Low"
 
     return {
