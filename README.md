@@ -1,5 +1,7 @@
 # Enterprise Intelligence Platform
 
+![Enterprise Intelligence Platform dashboard screenshot](Screenshot%202026-11-02%20at%2018.52.54.png)
+
 SNOWFLAKE · DATA ENGINEERING · AI/ML · CLOUD SECURITY
 
 A production-oriented enterprise data platform combining modern data warehousing, automated pipelines, machine learning, generative AI, data governance and cloud-native engineering.
