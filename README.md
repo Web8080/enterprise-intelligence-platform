@@ -1,6 +1,6 @@
 # Enterprise Intelligence Platform
 
-![Enterprise Intelligence Platform dashboard preview](docs/dashboard-preview.svg)
+![Enterprise Intelligence Platform dashboard screenshot](Screenshot%202026-11-02%20at%2020.04.48.png)
 
 SNOWFLAKE · DATA ENGINEERING · AI/ML · CLOUD SECURITY
 
