@@ -1,0 +1,34 @@
+version: 2
+
+sources:
+  - name: enterprise_intelligence_platform
+    database: ENTERPRISE_INTELLIGENCE_PLATFORM
+    schema: RAW
+    tables:
+      - name: property_raw
+      - name: payment_fact
+
+models:
+  - name: stg_properties
+    description: Standardised property source records for portfolio analytics.
+    columns:
+      - name: property_id
+        tests:
+          - unique
+          - not_null
+      - name: organisation_id
+        tests:
+          - not_null
+      - name: occupancy_rate
+        tests:
+          - not_null
+
+  - name: mart_portfolio_kpis
+    description: Portfolio-level KPI rollups for occupancy, arrears and rental performance.
+    columns:
+      - name: property_id
+        tests:
+          - not_null
+      - name: total_arrears
+        tests:
+          - not_null

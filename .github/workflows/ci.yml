@@ -1,0 +1,50 @@
+name: Enterprise Intelligence Platform CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Install backend dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r backend/requirements.txt
+          python -m pip install pytest
+      - name: Run backend tests
+        working-directory: backend
+        run: python -m pytest tests/test_platform_api.py -q
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install frontend dependencies
+        run: |
+          cd frontend
+          npm install
+      - name: Lint and build frontend
+        run: |
+          cd frontend
+          npm run build
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check for secrets in repo
+        run: |
+          if grep -R "AKIA\|aws_secret_access_key\|snowflake_password\|BEGIN PRIVATE KEY" . --exclude-dir=.git; then
+            echo "Potential secret material detected. Remove before merge." >&2
+            exit 1
+          fi
