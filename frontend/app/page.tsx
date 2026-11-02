@@ -1,8 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 const apiBase = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+
+type ViewKey = 'overview' | 'portfolio' | 'finance' | 'operations' | 'governance' | 'insights';
+
+const navigation: { key: ViewKey; label: string }[] = [
+  { key: 'overview', label: 'Overview' },
+  { key: 'portfolio', label: 'Portfolio' },
+  { key: 'finance', label: 'Finance' },
+  { key: 'operations', label: 'Operations' },
+  { key: 'governance', label: 'Governance' },
+  { key: 'insights', label: 'AI Insights' },
+];
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(value);
@@ -47,6 +58,7 @@ export default function Home() {
   const [question, setQuestion] = useState('Which properties have the highest rental arrears?');
   const [aiReply, setAiReply] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeView, setActiveView] = useState<ViewKey>('overview');
 
   useEffect(() => {
     const fetchOverview = async () => {
@@ -69,13 +81,13 @@ export default function Home() {
     fetchOverview();
   }, []);
 
-  const askAi = async () => {
+  const askAi = async (customQuestion = question) => {
     setIsLoading(true);
     try {
       const res = await fetch(`${apiBase}/api/v1/ai/query`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question }),
+        body: JSON.stringify({ question: customQuestion }),
       });
       const json = await res.json();
       setAiReply(json);
@@ -85,6 +97,52 @@ export default function Home() {
       setIsLoading(false);
     }
   };
+
+  const generateInsight = () => {
+    setQuestion('Summarise the portfolio health, arrears risk, and the top actions for executive review.');
+    void askAi('Summarise the portfolio health, arrears risk, and the top actions for executive review.');
+    setActiveView('insights');
+  };
+
+  const portfolioWidgets = useMemo(
+    () => [
+      { label: 'Portfolio count', value: '12 active portfolios', tone: 'sky' },
+      { label: 'Tenant population', value: '8,420 residents', tone: 'emerald' },
+      { label: 'High-risk assets', value: '6 watchlist properties', tone: 'amber' },
+      { label: 'Leasing velocity', value: '4.8% MoM', tone: 'violet' },
+    ],
+    [],
+  );
+
+  const financeWidgets = useMemo(
+    () => [
+      { label: 'Gross rent', value: '$4.82M', tone: 'emerald' },
+      { label: 'Collections', value: '$1.33M', tone: 'sky' },
+      { label: 'Cash outstanding', value: '$248.6K', tone: 'amber' },
+      { label: 'Forecast variance', value: '+3.1%', tone: 'violet' },
+    ],
+    [],
+  );
+
+  const opsWidgets = useMemo(
+    () => [
+      { label: 'Open work orders', value: '37', tone: 'amber' },
+      { label: 'Avg resolution', value: '41 hrs', tone: 'sky' },
+      { label: 'Critical incidents', value: '4', tone: 'rose' },
+      { label: 'Vendor SLA', value: '92.6%', tone: 'emerald' },
+    ],
+    [],
+  );
+
+  const governanceWidgets = useMemo(
+    () => [
+      { label: 'Access policies', value: '42', tone: 'sky' },
+      { label: 'AIOps reviews', value: '2 alerts', tone: 'amber' },
+      { label: 'Audit events', value: '14,920', tone: 'emerald' },
+      { label: 'Risk posture', value: 'Compliant', tone: 'violet' },
+    ],
+    [],
+  );
 
   if (!overview || !monitoring) {
     return <div className="flex min-h-screen items-center justify-center text-slate-200">Loading enterprise dashboard…</div>;
@@ -100,138 +158,215 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-3">
             <button className="rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-200">Northgate Property Group</button>
-            <button className="rounded-lg bg-sky-500 px-4 py-2 text-sm font-semibold text-slate-900">Generate insight</button>
+            <button
+              onClick={generateInsight}
+              className="rounded-lg bg-sky-500 px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-sky-400"
+            >
+              Generate insight
+            </button>
           </div>
         </header>
 
-        <section className="mb-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {[
-            { label: 'Total properties', value: formatNumber(overview.total_properties), delta: '+4.1%', trend: 'up' },
-            { label: 'Total rental income', value: overview.total_rental_income, delta: '+8.2%', trend: 'up' },
-            { label: 'Outstanding arrears', value: overview.outstanding_arrears, delta: '-2.4%', trend: 'down' },
-            { label: 'Occupancy rate', value: overview.occupancy_rate, delta: '+1.3%', trend: 'up' },
-          ].map((metric) => (
-            <div key={metric.label} className="rounded-2xl border border-slate-700 bg-slate-900/80 p-4 shadow-lg shadow-slate-950/20">
-              <div className="flex items-center justify-between text-sm text-slate-400">
-                <span>{metric.label}</span>
-                <span className={metric.trend === 'up' ? 'text-emerald-400' : 'text-amber-400'}>{metric.delta}</span>
-              </div>
-              <div className="mt-4 text-3xl font-bold">{metric.value}</div>
-            </div>
+        <nav className="mb-8 flex flex-wrap gap-2">
+          {navigation.map((item) => (
+            <button
+              key={item.key}
+              onClick={() => setActiveView(item.key)}
+              className={`rounded-xl border px-4 py-2 text-sm transition ${
+                activeView === item.key
+                  ? 'border-sky-400 bg-sky-500/15 text-sky-200'
+                  : 'border-slate-700 bg-slate-900/70 text-slate-300 hover:border-slate-500'
+              }`}
+            >
+              {item.label}
+            </button>
           ))}
-        </section>
+        </nav>
 
-        <div className="mb-8 grid gap-8 xl:grid-cols-[1.5fr_0.9fr]">
-          <section className="rounded-2xl border border-slate-700 bg-slate-900/80 p-5">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold">Revenue trends</h2>
-              <span className="rounded-full border border-sky-400/60 bg-sky-500/10 px-2 py-1 text-xs text-sky-300">Portfolio performance</span>
-            </div>
-            <DashboardChart values={overview.revenue_trend} />
-            <div className="mt-4 grid grid-cols-8 gap-2 text-center text-xs text-slate-400">
-              {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'].map((month) => (
-                <span key={month}>{month}</span>
+        {activeView === 'overview' && (
+          <>
+            <section className="mb-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+              {[
+                { label: 'Total properties', value: formatNumber(overview.total_properties), delta: '+4.1%', trend: 'up' },
+                { label: 'Total rental income', value: overview.total_rental_income, delta: '+8.2%', trend: 'up' },
+                { label: 'Outstanding arrears', value: overview.outstanding_arrears, delta: '-2.4%', trend: 'down' },
+                { label: 'Occupancy rate', value: overview.occupancy_rate, delta: '+1.3%', trend: 'up' },
+              ].map((metric) => (
+                <div key={metric.label} className="rounded-2xl border border-slate-700 bg-slate-900/80 p-4 shadow-lg shadow-slate-950/20">
+                  <div className="flex items-center justify-between text-sm text-slate-400">
+                    <span>{metric.label}</span>
+                    <span className={metric.trend === 'up' ? 'text-emerald-400' : 'text-amber-400'}>{metric.delta}</span>
+                  </div>
+                  <div className="mt-4 text-3xl font-bold">{metric.value}</div>
+                </div>
               ))}
+            </section>
+
+            <div className="mb-8 grid gap-8 xl:grid-cols-[1.5fr_0.9fr]">
+              <section className="rounded-2xl border border-slate-700 bg-slate-900/80 p-5">
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className="text-lg font-semibold">Revenue trends</h2>
+                  <span className="rounded-full border border-sky-400/60 bg-sky-500/10 px-2 py-1 text-xs text-sky-300">Portfolio performance</span>
+                </div>
+                <DashboardChart values={overview.revenue_trend} />
+                <div className="mt-4 grid grid-cols-8 gap-2 text-center text-xs text-slate-400">
+                  {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'].map((month) => (
+                    <span key={month}>{month}</span>
+                  ))}
+                </div>
+              </section>
+
+              <aside className="rounded-2xl border border-slate-700 bg-slate-900/80 p-5">
+                <h2 className="mb-4 text-lg font-semibold">AI-generated business insights</h2>
+                <ul className="space-y-3 text-sm text-slate-300">
+                  {overview.alerts.map((alert: string) => (
+                    <li key={alert} className="rounded-xl border border-slate-700 bg-slate-800/80 p-3">
+                      {alert}
+                    </li>
+                  ))}
+                </ul>
+              </aside>
+            </div>
+
+            <section className="mb-8 grid gap-6 xl:grid-cols-3">
+              <div className="rounded-2xl border border-slate-700 bg-slate-900/80 p-5">
+                <h3 className="text-lg font-semibold">Data quality</h3>
+                <div className="mt-4 space-y-3 text-sm text-slate-300">
+                  <div className="flex justify-between"><span>Schema drift</span><span className="text-emerald-400">Low</span></div>
+                  <div className="flex justify-between"><span>Duplicate records</span><span className="text-emerald-400">0.2%</span></div>
+                  <div className="flex justify-between"><span>Freshness SLA</span><span className="text-sky-300">95.4%</span></div>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-slate-700 bg-slate-900/80 p-5">
+                <h3 className="text-lg font-semibold">Operational spend</h3>
+                <div className="mt-4 space-y-3 text-sm text-slate-300">
+                  <div className="flex justify-between"><span>Maintenance</span><span>$612K</span></div>
+                  <div className="flex justify-between"><span>Utilities</span><span>$224K</span></div>
+                  <div className="flex justify-between"><span>Insurance</span><span>$118K</span></div>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-slate-700 bg-slate-900/80 p-5">
+                <h3 className="text-lg font-semibold">Monitoring status</h3>
+                <div className="mt-4 space-y-3 text-sm text-slate-300">
+                  <div className="flex justify-between"><span>API health</span><span className="text-emerald-400">{monitoring.api_health}%</span></div>
+                  <div className="flex justify-between"><span>Pipeline health</span><span className="text-amber-300">{monitoring.pipeline_health}%</span></div>
+                  <div className="flex justify-between"><span>Warehouse util</span><span>{monitoring.warehouse_utilisation}%</span></div>
+                </div>
+              </div>
+            </section>
+          </>
+        )}
+
+        {activeView === 'portfolio' && (
+          <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            {portfolioWidgets.map((widget) => (
+              <div key={widget.label} className="rounded-2xl border border-slate-700 bg-slate-900/80 p-5">
+                <p className="text-sm text-slate-400">{widget.label}</p>
+                <p className="mt-4 text-2xl font-bold text-slate-100">{widget.value}</p>
+              </div>
+            ))}
+          </section>
+        )}
+
+        {activeView === 'finance' && (
+          <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            {financeWidgets.map((widget) => (
+              <div key={widget.label} className="rounded-2xl border border-slate-700 bg-slate-900/80 p-5">
+                <p className="text-sm text-slate-400">{widget.label}</p>
+                <p className="mt-4 text-2xl font-bold text-slate-100">{widget.value}</p>
+              </div>
+            ))}
+          </section>
+        )}
+
+        {activeView === 'operations' && (
+          <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            {opsWidgets.map((widget) => (
+              <div key={widget.label} className="rounded-2xl border border-slate-700 bg-slate-900/80 p-5">
+                <p className="text-sm text-slate-400">{widget.label}</p>
+                <p className="mt-4 text-2xl font-bold text-slate-100">{widget.value}</p>
+              </div>
+            ))}
+          </section>
+        )}
+
+        {activeView === 'governance' && (
+          <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            {governanceWidgets.map((widget) => (
+              <div key={widget.label} className="rounded-2xl border border-slate-700 bg-slate-900/80 p-5">
+                <p className="text-sm text-slate-400">{widget.label}</p>
+                <p className="mt-4 text-2xl font-bold text-slate-100">{widget.value}</p>
+              </div>
+            ))}
+          </section>
+        )}
+
+        {activeView !== 'overview' && activeView !== 'insights' && (
+          <div className="mt-8 rounded-2xl border border-slate-700 bg-slate-900/80 p-5 text-slate-300">
+            This section is ready for live operational data, workflow metrics, and drill-down views when the Snowflake connection is activated.
+          </div>
+        )}
+
+        {activeView === 'insights' && (
+          <section className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+            <div className="rounded-2xl border border-slate-700 bg-slate-900/80 p-5">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-lg font-semibold">AI Intelligence Assistant</h2>
+                <span className="text-xs uppercase tracking-[0.2em] text-emerald-300">Grounded queries</span>
+              </div>
+              <div className="flex gap-3">
+                <input
+                  value={question}
+                  onChange={(event) => setQuestion(event.target.value)}
+                  className="flex-1 rounded-xl border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 outline-none"
+                  placeholder="Ask about arrears, occupancy, income, or maintenance"
+                />
+                <button onClick={() => void askAi()} className="rounded-xl bg-sky-500 px-4 py-2 font-semibold text-slate-900">
+                  Ask
+                </button>
+              </div>
+
+              <div className="mt-5 rounded-xl border border-slate-700 bg-slate-800/80 p-4">
+                {aiReply ? (
+                  <>
+                    <p className="text-sm text-sky-300">Confidence: {aiReply.confidence}</p>
+                    <p className="mt-3 text-base text-slate-100">{aiReply.answer}</p>
+                    <div className="mt-4 rounded-lg bg-slate-950/70 p-3 font-mono text-xs text-slate-300">
+                      {aiReply.sql}
+                    </div>
+                    <div className="mt-4 flex flex-wrap gap-2 text-xs text-slate-300">
+                      {aiReply.references.map((ref: string) => (
+                        <span key={ref} className="rounded-full border border-slate-600 bg-slate-700 px-2 py-1">{ref}</span>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-slate-400">No query yet. Try asking for arrears or revenue insights.</p>
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-slate-700 bg-slate-900/80 p-5">
+              <h2 className="mb-4 text-lg font-semibold">Security and governance</h2>
+              <div className="space-y-4">
+                <div className="rounded-xl border border-slate-700 bg-slate-800/80 p-3">
+                  <div className="text-sm text-slate-400">Governance status</div>
+                  <div className="mt-2 text-2xl font-bold text-emerald-400">Compliant</div>
+                </div>
+                <div className="rounded-xl border border-slate-700 bg-slate-800/80 p-3">
+                  <div className="text-sm text-slate-400">Policy coverage</div>
+                  <div className="mt-2 text-2xl font-bold">42 access policies</div>
+                </div>
+                <div className="rounded-xl border border-slate-700 bg-slate-800/80 p-3">
+                  <div className="text-sm text-slate-400">AI access monitoring</div>
+                  <div className="mt-2 text-lg font-bold text-amber-300">2 alerts needing review</div>
+                </div>
+              </div>
             </div>
           </section>
-
-          <aside className="rounded-2xl border border-slate-700 bg-slate-900/80 p-5">
-            <h2 className="mb-4 text-lg font-semibold">AI-generated business insights</h2>
-            <ul className="space-y-3 text-sm text-slate-300">
-              {overview.alerts.map((alert: string) => (
-                <li key={alert} className="rounded-xl border border-slate-700 bg-slate-800/80 p-3">
-                  {alert}
-                </li>
-              ))}
-            </ul>
-          </aside>
-        </div>
-
-        <section className="mb-8 grid gap-6 xl:grid-cols-3">
-          <div className="rounded-2xl border border-slate-700 bg-slate-900/80 p-5">
-            <h3 className="text-lg font-semibold">Data quality</h3>
-            <div className="mt-4 space-y-3 text-sm text-slate-300">
-              <div className="flex justify-between"><span>Schema drift</span><span className="text-emerald-400">Low</span></div>
-              <div className="flex justify-between"><span>Duplicate records</span><span className="text-emerald-400">0.2%</span></div>
-              <div className="flex justify-between"><span>Freshness SLA</span><span className="text-sky-300">95.4%</span></div>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-slate-700 bg-slate-900/80 p-5">
-            <h3 className="text-lg font-semibold">Operational spend</h3>
-            <div className="mt-4 space-y-3 text-sm text-slate-300">
-              <div className="flex justify-between"><span>Maintenance</span><span>$612K</span></div>
-              <div className="flex justify-between"><span>Utilities</span><span>$224K</span></div>
-              <div className="flex justify-between"><span>Insurance</span><span>$118K</span></div>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-slate-700 bg-slate-900/80 p-5">
-            <h3 className="text-lg font-semibold">Monitoring status</h3>
-            <div className="mt-4 space-y-3 text-sm text-slate-300">
-              <div className="flex justify-between"><span>API health</span><span className="text-emerald-400">{monitoring.api_health}%</span></div>
-              <div className="flex justify-between"><span>Pipeline health</span><span className="text-amber-300">{monitoring.pipeline_health}%</span></div>
-              <div className="flex justify-between"><span>Warehouse util</span><span>{monitoring.warehouse_utilisation}%</span></div>
-            </div>
-          </div>
-        </section>
-
-        <section className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-2xl border border-slate-700 bg-slate-900/80 p-5">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold">AI Intelligence Assistant</h2>
-              <span className="text-xs uppercase tracking-[0.2em] text-emerald-300">Grounded queries</span>
-            </div>
-            <div className="flex gap-3">
-              <input
-                value={question}
-                onChange={(event) => setQuestion(event.target.value)}
-                className="flex-1 rounded-xl border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 outline-none"
-                placeholder="Ask about arrears, occupancy, income, or maintenance"
-              />
-              <button onClick={askAi} className="rounded-xl bg-sky-500 px-4 py-2 font-semibold text-slate-900">
-                Ask
-              </button>
-            </div>
-
-            <div className="mt-5 rounded-xl border border-slate-700 bg-slate-800/80 p-4">
-              {aiReply ? (
-                <>
-                  <p className="text-sm text-sky-300">Confidence: {aiReply.confidence}</p>
-                  <p className="mt-3 text-base text-slate-100">{aiReply.answer}</p>
-                  <div className="mt-4 rounded-lg bg-slate-950/70 p-3 font-mono text-xs text-slate-300">
-                    {aiReply.sql}
-                  </div>
-                  <div className="mt-4 flex flex-wrap gap-2 text-xs text-slate-300">
-                    {aiReply.references.map((ref: string) => (
-                      <span key={ref} className="rounded-full border border-slate-600 bg-slate-700 px-2 py-1">{ref}</span>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                <p className="text-slate-400">No query yet. Try asking for arrears or revenue insights.</p>
-              )}
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-slate-700 bg-slate-900/80 p-5">
-            <h2 className="mb-4 text-lg font-semibold">Security and governance</h2>
-            <div className="space-y-4">
-              <div className="rounded-xl border border-slate-700 bg-slate-800/80 p-3">
-                <div className="text-sm text-slate-400">Governance status</div>
-                <div className="mt-2 text-2xl font-bold text-emerald-400">Compliant</div>
-              </div>
-              <div className="rounded-xl border border-slate-700 bg-slate-800/80 p-3">
-                <div className="text-sm text-slate-400">Policy coverage</div>
-                <div className="mt-2 text-2xl font-bold">42 access policies</div>
-              </div>
-              <div className="rounded-xl border border-slate-700 bg-slate-800/80 p-3">
-                <div className="text-sm text-slate-400">AI access monitoring</div>
-                <div className="mt-2 text-lg font-bold text-amber-300">2 alerts needing review</div>
-              </div>
-            </div>
-          </div>
-        </section>
+        )}
       </div>
     </main>
   );
